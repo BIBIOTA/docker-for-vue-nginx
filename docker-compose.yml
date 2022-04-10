@@ -1,0 +1,42 @@
+version: '3.6'
+services:
+  # node-vue-cli
+  node-vue-cli:
+    build:
+      context: ./node
+      dockerfile: Dockerfile
+    container_name: node-vue-cli
+    hostname: node-vue-cli
+    ports: 
+      - 8080:8080
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ${VUE_PROJECT_PATH}:/app
+    stdin_open: true
+    tty: true
+    networks:
+      - frontend
+  # vue-cli-nginx
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    container_name: vue-cli-nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ${VUE_PROJECT_PATH}/:/var/www/html/app
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/log:/var/log/nginx
+    environment:
+      - TZ=Asia/Taipei
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    driver: bridge
